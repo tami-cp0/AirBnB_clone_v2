@@ -3,6 +3,7 @@
 import cmd
 import sys
 import shlex
+import re
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -116,7 +117,10 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        command_line_input = args.split()
+        # regex match: string param | int param | float param | class_name
+        command_line_input = \
+            re.findall(r'\w+="[^"]*"|\w+=-?\d+\.\d+|\w+=-?\d+|[\w]+', args)
+            
         if not args:
             print("** class name missing **")
             return
@@ -127,8 +131,12 @@ class HBNBCommand(cmd.Cmd):
         new_instance = HBNBCommand.classes[command_line_input[0]]()
         for param in command_line_input[1:]:
             key, value = param.split('=')
+
             # Checks if input is a string, int or float
             if value.startswith('"') and value.endswith('"'):
+                # Strict command line syntax            
+                if ' ' in value:
+                    continue
                 value = value.strip('"')
             elif value.isdigit():
                 value = int(value)
