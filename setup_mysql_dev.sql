@@ -1,8 +1,8 @@
 -- Create a MySQL server for the project
 CREATE DATABASE IF NOT EXISTS hbnb_dev_db;
 
--- Set password policy to low temporarily
-SET GLOBAL validate_password.policy = LOW;
+-- -- Set password policy to low temporarily
+-- SET GLOBAL validate_password.policy = LOW;
 
 -- Create the user if it doesn't exist and set the password
 CREATE USER IF NOT EXISTS 'hbnb_dev'@'localhost' IDENTIFIED BY 'hbnb_dev_pwd';
