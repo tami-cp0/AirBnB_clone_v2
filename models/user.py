@@ -10,15 +10,7 @@ from sqlalchemy.orm import relationship
 
 class User(BaseModel, Base):
     """This class defines a user by various attributes"""
-<<<<<<< HEAD
-    __tablename__ = 'users'
-    places = relationship(
-        "Place", backref="user",
-        cascade="all, delete, delete-orphan"
-    )
-=======
     __tablename__ = "users"
->>>>>>> parent of f2bf6e1 (changed table records)
 
     email = Column(String(128), nullable=False)
     password = Column(String(128), nullable=False)
