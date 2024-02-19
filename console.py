@@ -2,7 +2,6 @@
 """ Console Module """
 import cmd
 import sys
-import shlex
 import re
 from models.base_model import BaseModel
 from models.__init__ import storage
@@ -120,7 +119,7 @@ class HBNBCommand(cmd.Cmd):
         # regex match: string param | int param | float param | class_name
         command_line_input = \
             re.findall(r'\w+="[^"]*"|\w+=-?\d+\.\d+|\w+=-?\d+|[\w]+', args)
-            
+
         if not args:
             print("** class name missing **")
             return
@@ -134,7 +133,7 @@ class HBNBCommand(cmd.Cmd):
 
             # Checks if input is a string, int or float
             if value.startswith('"') and value.endswith('"'):
-                # Strict command line syntax            
+                # Strict command line syntax
                 if ' ' in value:
                     continue
                 value = value.strip('"')
@@ -144,9 +143,8 @@ class HBNBCommand(cmd.Cmd):
                 value = float(value)
             setattr(new_instance, key, value)
 
-        storage.save()
         print(new_instance.id)
-        storage.save()
+        new_instance.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -225,14 +223,14 @@ class HBNBCommand(cmd.Cmd):
 
         if args:
             args = args.split(' ')[0]  # remove possible trailing args
-            if args not in HBNBCommand.classes:
+            if args not in self.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            cls = self.classes[args]
+            for v in storage.all(cls).values():
+                print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            for v in storage.all().values():
                 print_list.append(str(v))
 
         print(print_list)
