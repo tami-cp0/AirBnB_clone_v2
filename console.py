@@ -227,10 +227,10 @@ class HBNBCommand(cmd.Cmd):
                 print("** class doesn't exist **")
                 return
             cls = self.classes[args]
-            for v in storage.all(cls).items():
+            for v in storage.all(cls).values():
                 print_list.append(str(v))
         else:
-            for v in storage.all(cls).items():
+            for v in storage.all(cls).values():
                 print_list.append(str(v))
 
         print(print_list)
