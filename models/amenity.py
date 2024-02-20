@@ -1,7 +1,14 @@
 #!/usr/bin/python3
-""" State Module for HBNB project """
-from models.base_model import BaseModel
+""" Amenity Module for HBNB project """
+from models.base_model import BaseModel, Base
+from sqlalchemy import Column, String, ForeignKey, Integer, Float
 
 
-class Amenity(BaseModel):
-    name = ""
+class Amenity(BaseModel, Base):
+    """Amenity class"""
+    __tablename__ = 'amenities'
+
+    name = Column(
+        String(60),
+        nullable=False
+    )
