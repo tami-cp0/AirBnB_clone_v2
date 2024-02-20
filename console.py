@@ -136,7 +136,8 @@ class HBNBCommand(cmd.Cmd):
                 # Strict command line syntax
                 if ' ' in value:
                     continue
-                value = value.strip('"')
+                
+                value = value.replace('_', ' ').strip('"')
             elif value.isdigit():
                 value = int(value)
             elif "." in value:
