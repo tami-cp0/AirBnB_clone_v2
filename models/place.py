@@ -3,34 +3,24 @@
 import os
 import models
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, ForeignKey, Integer, Float
+from sqlalchemy import Column, String, ForeignKey, Integer, Float, Table
 from sqlalchemy.orm import relationship
 from models.review import Review
+from models.amenity import Amenity
 
+
+# many-to-many between place and amenities
+place_amenities = Table(
+    'place_amenities', Base.metadata,
+    Column('place_id', String(60), ForeignKey('places.id'),
+       nullable=False, primary_key=True),
+    Column('amenity_id', String(60), ForeignKey('amenities.id'),
+       nullable=False, primary_key=True)
+)
 
 class Place(BaseModel, Base):
     """ A place to stay """
     __tablename__ = 'places'
-    
-    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
-        reviews = relationship(
-            'Review', backref='place', cascade='all, delete, delete-orphan'
-        )
-    else:
-        @property
-        def reviews(self):
-            """
-            returns the list of Review instances with place_id
-            equals to the current Place.id
-            """
-            # Retrievs review instances
-            instances = models.storage.all(Review)
-            review_list = []
-
-            for review in instances:
-                if getattr(review, 'place_id', None) == self.id:
-                    review_list.append(review)
-            return review_list
 
     city_id = Column(
         String(60),
@@ -73,3 +63,49 @@ class Place(BaseModel, Base):
     longitude = Column(Float)
 
     amenity_ids = []
+
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        reviews = relationship(
+            'Review', backref='place', cascade='all, delete, delete-orphan'
+        )
+        amenities = relationship(
+            'Amenity', secondary=place_amenities, backref='places', viewonly=False
+        )
+    else:
+        @property
+        def reviews(self):
+            """
+            returns the list of Review instances with place_id
+            equals to the current Place.id
+            """
+            # Retrievs review instances
+            instances = models.storage.all(Review)
+            review_list = []
+
+            for review in instances:
+                if getattr(review, 'place_id', None) == self.id:
+                    review_list.append(review)
+            return review_list
+        
+        @property
+        def amenities(self):
+            """
+            Getter for amenities that returns the list of Amenity instances
+            linked to the Place through amenity_ids.
+            """
+            # Retrieve instances of amenity
+            linked_amenities = []
+
+            for amenity in models.storage.all(Amenity):
+                if getattr(amenity, 'amenity_ids', None) == self.id:
+                    linked_amenities.append(amenity)
+
+            return self.amenities
+
+        @amenities.setter
+        def amenities(self, obj):
+            """
+            Setter that adds an Amenity.id to the amenity_ids list if obj is an Amenity instance.
+            """
+            if isinstance(obj, Amenity) and obj.id not in self.amenity_ids:
+                self.amenity_ids.append(obj.id)
