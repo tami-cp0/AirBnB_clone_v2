@@ -38,3 +38,5 @@ fi
 chown -R ubuntu:ubuntu "/data/"
 
 sed -i 's,server {,server {\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n,g' /etc/nginx/sites-enabled/default
+
+service nginx restart
