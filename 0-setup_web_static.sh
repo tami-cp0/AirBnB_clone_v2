@@ -7,34 +7,20 @@ if ! service nginx status &> /dev/null; then
     service nginx start
 fi
 
-if [ ! -d "/data/" ]; then
-    mkdir "/data/"
-fi
-
-if [ ! -d "/data/web_static/" ]; then
-    mkdir "/data/web_static/"
-fi
-
-if [ ! -d "/data/web_static/releases/" ]; then
-    mkdir "/data/web_static/releases/"
-fi
-
 if [ ! -d "/data/web_static/shared/" ]; then
-    mkdir "/data/web_static/shared/"
+    mkdir -p "/data/web_static/shared/"
 fi
 
 if [ ! -d "/data/web_static/releases/test/" ]; then
-    mkdir "/data/web_static/releases/test/"
+    mkdir -p "/data/web_static/releases/test/"
 fi
 
-if [ ! -e "/data/web_static/releases/test/index.html" ]; then
-    echo "Hello World!" > "/data/web_static/releases/test/index.html"
-fi
+echo "Hello World!" > "/data/web_static/releases/test/index.html"
 
 ln -sf "/data/web_static/releases/test/" "/data/web_static/current"
 
-chown -HR ubuntu:ubuntu "/data/"
+chown -hR ubuntu:ubuntu "/data/"
 
-sed -i 's,server_name _;,server_name _;\n\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n,g' /etc/nginx/sites-enabled/default
+sed -i 's,server_name _;,server_name _;\n\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current;\n\t\tindex index.html;\n\t}\n,g' /etc/nginx/sites-available/default
 
-nginx -s reload
+service nginx restart
