@@ -32,6 +32,7 @@ fi
 
 if [ -L "/data/web_static/current" ]; then
     rm -f "/data/web_static/current" && ln -s "/data/web_static/releases/test/" "/data/web_static/current"
+fi
 
 chown -R ubuntu:ubuntu "/data/"
 
