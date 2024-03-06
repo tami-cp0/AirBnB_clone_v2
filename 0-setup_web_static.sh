@@ -28,15 +28,13 @@ if [ ! -d "/data/web_static/releases/test/" ]; then
 fi
 
 if [ ! -e "/data/web_static/releases/test/index.html" ]; then
-    touch "/data/web_static/releases/test/index.html"
+    echo "Hello World!" > "/data/web_static/releases/test/index.html"
 fi
 
-if [ -L "/data/web_static/current" ]; then
-    rm -f "/data/web_static/current" && ln -s "/data/web_static/releases/test/" "/data/web_static/current"
-fi
+ln -sf "/data/web_static/releases/test/" "/data/web_static/current"
 
-chown -R ubuntu:ubuntu "/data/"
+chown -HR ubuntu:ubuntu "/data/"
 
-sed -i 's,server {,server {\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n,g' /etc/nginx/sites-enabled/default
+sed -i 's,server_name _;,server_name _;\n\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n,g' /etc/nginx/sites-enabled/default
 
-service nginx restart
+nginx -s reload
