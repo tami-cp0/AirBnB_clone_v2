@@ -6,6 +6,7 @@ import os
 
 
 def do_pack():
+    """Create a tar gzipped archive of the directory web_static."""
     now = datetime.utcnow()
     timestamp = now.strftime("%Y%m%d%H%M%S")
     archive_name = f"web_static_{timestamp}.tgz"
