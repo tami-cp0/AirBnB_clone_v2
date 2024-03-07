@@ -39,3 +39,19 @@ def do_deploy(archive_path):
         return True
     except Exception as e:
         return False
+
+def do_pack():
+    """Create a tar gzipped archive of the directory web_static."""
+    now = datetime.utcnow()
+    timestamp = now.strftime("%Y%m%d%H%M%S")
+    archive_name = f"web_static_{timestamp}.tgz"
+    archive_path = f"versions/{archive_name}"
+
+    if not os.path.exists("versions"):
+        if local("mkdir versions").failed:
+            return None
+
+    if local(f"tar -cvzf {archive_path} web_static").succeeded:
+        return archive_path
+    else:
+        return None
