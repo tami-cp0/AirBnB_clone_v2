@@ -4,6 +4,7 @@ from fabric.api import run, put, env
 import os
 env.user = "ubuntu"
 env.hosts = ['54.157.167.117', '54.160.75.58']
+env.key_filename = '~/.ssh/id_rsa'
 
 
 def do_deploy(archive_path):
@@ -12,31 +13,31 @@ def do_deploy(archive_path):
         return False
 
     try:
-        archive_name = archive_path.split(".")[0]
-
+        archive_filename = os.path.basename(archive_path).split(".")[0]
+        tar_file = os.path.basename(archive_path)
         # Upload the archive to the remote server
         put(archive_path, "/tmp/")
 
         # Create directory for extraction
-        run(f"mkdir -p /data/web_static/releases/{archive_name}")
+        run(f"mkdir -p /data/web_static/releases/{archive_filename}/")
 
         # Extract the archive
-        run(f"tar -xzf /tmp/\
-        {archive_path} -C /data/web_static/releases/{archive_name}")
+        run(f"tar -xzvf /tmp/{tar_file} -C /data/web_static/releases/{archive_filename}/")
 
         # Remove the temporary archive file
-        run(f"rm /tmp/{archive_path}")
+        run(f"rm /tmp/{tar_file}")
 
         # Move files to the appropriate location
-        run(f"mv /data/web_static/releases/\
-        {archive_name}/web_static/* /data/web_static/releases/{archive_name}/")
+        run(f"mv /data/web_static/releases/{archive_filename}/web_static/* /data/web_static/releases/{archive_filename}/")
 
         # Remove the now empty web_static directory
-        run(f"rm -rf /data/web_static/releases/{archive_name}/web_static")
+        run(f"rm -rf /data/web_static/releases/{archive_filename}/web_static")
+
+        # remove the current symbolic link
+        run("rm -rf /data/web_static/current")
 
         # Update symbolic link
-        run(f"ln -sf /data/web_static/releases/\
-        {archive_name} /data/web_static/current")
+        run(f"ln -s /data/web_static/releases/{archive_filename} /data/web_static/current")
         print('New version deployed!')
         return True
     except Exception as e:
