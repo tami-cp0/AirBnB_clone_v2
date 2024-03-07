@@ -2,7 +2,7 @@
 #  Fabric script that distributes an archive to your web servers
 from fabric.api import run, put, env
 import os
-env.users = ['ubuntu', 'ubuntu']
+env.user = "ubuntu"
 env.hosts = ['54.157.167.117', '54.160.75.58']
 
 
@@ -11,37 +11,33 @@ def do_deploy(archive_path):
     if not os.path.exists(archive_path):
         return False
 
-    # Upload the archive to the remote server
-    if put(archive_path, f"/tmp/{archive_path}",
-            mirror_local_mode=True).failed:
-        return False
+    try:
+        archive_name = archive_path.split(".")[0]
 
-    # Create directory for extraction
-    if run(f"mkdir -p /data/web_static/releases/{archive_path[:-4]}").failed:
-        return False
+        # Upload the archive to the remote server
+        put(archive_path, "/tmp/")
 
-    # Extract the archive
-    if run(f"tar -xzf /tmp/{archive_path} -C /data/web_static/releases/\
-    {archive_path[:-4]}").failed:
-        return False
+        # Create directory for extraction
+        run(f"mkdir -p /data/web_static/releases/{archive_name}")
 
-    # Remove the temporary archive file
-    if run(f"rm /tmp/{archive_path}").failed:
-        return False
+        # Extract the archive
+        run(f"tar -xzf /tmp/\
+        {archive_path} -C /data/web_static/releases/{archive_name}")
 
-    # Move files to the appropriate location
-    if run(f"mv /data/web_static/releases/{archive_path[:-4]}/web_static/* \
-    /data/web_static/releases/{archive_path[:-4]}/").failed:
-        return False
+        # Remove the temporary archive file
+        run(f"rm /tmp/{archive_path}")
 
-    # Remove the now empty web_static directory
-    if run(f"rm -rf /data/web_static/releases/\
-    {archive_path[:-4]}/web_static").failed:
-        return False
+        # Move files to the appropriate location
+        run(f"mv /data/web_static/releases/\
+        {archive_name}/web_static/* /data/web_static/releases/{archive_name}/")
 
-    # Update symbolic link
-    if run(f"ln -sf /data/web_static/releases/\
-    {archive_path[:-4]} /data/web_static/current").failed:
-        return False
+        # Remove the now empty web_static directory
+        run(f"rm -rf /data/web_static/releases/{archive_name}/web_static")
 
-    return True
+        # Update symbolic link
+        run(f"ln -sf /data/web_static/releases/\
+        {archive_name} /data/web_static/current")
+
+        return True
+    except Exception as e:
+        return False
