@@ -35,6 +35,7 @@ def do_deploy(archive_path):
         # Update symbolic link
         run(f"ln -s /data/web_static/releases/"
             f"{archive_filename}/ /data/web_static/current")
+        print("New version deployed!")
         return True
     except Exception as e:
         return False
