@@ -7,6 +7,7 @@ env.hosts = ['54.157.167.117', '54.160.75.58']
 
 
 def do_deploy(archive_path):
+    """Deploys static releases to servers"""
     if not os.path.exists(archive_path):
         return False
 
