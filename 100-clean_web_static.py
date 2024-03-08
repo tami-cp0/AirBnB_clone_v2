@@ -20,19 +20,20 @@ def do_clean(number=0):
         None
     """
     local_files = os.listdir("versions")
-    
+
     # store remote files
-    number_remote_files = run('ls -1 /data/web_static/releases/ | grep "web_static_*" | wc -l')
-    
+    number_remote_files = run('ls -1 /data/web_static/releases/ |'
+                              ' grep "web_static_*" | wc -l')
+
     if int(number) < 1:
         number = 1
 
     if len(local_files) > int(number):
-        local(f"ls -1 versions/ | head -n -{int(number)} "
+        local(f"ls -t versions/ | grep 'web_static_*' |"
+              f" tail -n +{int(number) + 1} "
               "| xargs -I % rm versions/%")
-    
-    
+
     if number_remote_files > number:
-        run(f"ls -1 /data/web_static/releases/ | grep 'web_static_*' | head -n -{int(number)} "
-            "| xargs -I % rm -rf /data/web_static/releases/%")
-    
+        run(f"ls -t /data/web_static/releases/ | grep 'web_static_*' |"
+            f"tail -n +{int(number) + 1} |"
+            "xargs -I % rm -rf /data/web_static/releases/%")
