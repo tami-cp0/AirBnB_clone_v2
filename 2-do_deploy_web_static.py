@@ -39,7 +39,7 @@ def do_deploy(archive_path):
     #     except Exception as e:
     #         return False
     # else:
-        try:
+    try:
             archive_filename = os.path.basename(archive_path).split(".")[0]
             tar_file = os.path.basename(archive_path)
             # Upload the archive to the remote server
@@ -64,5 +64,5 @@ def do_deploy(archive_path):
                 f"{archive_filename} /data/web_static/current")
             print("New version deployed!")
             return True
-        except Exception as e:
+    except Exception as e:
             return False
