@@ -1,30 +1,28 @@
 #!/usr/bin/python3
-"""
-This file contains a script that deletes out-of-date archives
-"""
-from fabric.api import env, run
-from os import listdir, remove
-from os.path import isfile, join
+# Fabfile to delete out-of-date archives.
+import os
+from fabric.api import *
 
-
-env.user = 'ubuntu'
-env.hosts = ['54.157.167.117', '54.160.75.58']
+env.hosts = ["	54.157.167.117", "54.160.75.58"]
 
 
 def do_clean(number=0):
-    """Deletes out-of-date archives"""
-    number = int(number)
-    if number < 1:
-        number = 1
+    """Delete out-of-date archives.
+    Args:
+        number (int): The number of archives to keep.
+    If number is 0 or 1, keeps only the most recent archive. If
+    number is 2, keeps the most and second-most recent archives,
+    etc.
+    """
+    number = 1 if int(number) == 0 else int(number)
 
-    # Delete unnecessary archives in the versions folder
-    files = [f for f in listdir('versions') if isfile(join('versions', f))]
-    files.sort(reverse=True)
-    for file in files[number:]:
-        remove(join('versions', file))
+    archives = sorted(os.listdir("versions"))
+    [archives.pop() for i in range(number)]
+    with lcd("versions"):
+        [local("rm ./{}".format(a)) for a in archives]
 
-    # Delete unnecessary archives on the servers releases folder
-    cmd_list = 'ls -t /data/web_static/releases'
-    cmd_tail_h = 'tail -n +{} |'.format(number + 1)
-    cmd_tail_b = 'xargs -I {{}} rm -rf /data/web_static/releases/{{}}'
-    run(f"{cmd_list} | {cmd_tail_h} {cmd_tail_b}")
+    with cd("/data/web_static/releases"):
+        archives = run("ls -tr").split()
+        archives = [a for a in archives if "web_static_" in a]
+        [archives.pop() for i in range(number)]
+        [run("rm -rf ./{}".format(a)) for a in archives]
