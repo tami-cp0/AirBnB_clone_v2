@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 #  Fabric script that distributes an archive to your web servers
-from fabric.api import run, put, env, local, task
+from fabric.api import run, put, env, local
 import os
-env.user = "ubuntu"
-env.hosts = ['54.157.167.117', '54.160.75.58']
-env.key_filename = '~/.ssh/id_rsa'
 
-@task
+
 def do_deploy(archive_path):
     """Deploys static releases to servers"""
     if not os.path.exists(archive_path):
@@ -39,6 +36,9 @@ def do_deploy(archive_path):
         except Exception as e:
             return False
     else:
+        env.user = "ubuntu"
+        env.hosts = ['54.157.167.117', '54.160.75.58']
+        env.key_filename = '~/.ssh/id_rsa'
         try:
             archive_filename = os.path.basename(archive_path).split(".")[0]
             tar_file = os.path.basename(archive_path)
