@@ -3,9 +3,8 @@
 from fabric.api import env, put, run, local
 from datetime import datetime
 import os
-env.user = "ubuntu"
+
 env.hosts = ['54.157.167.117', '54.160.75.58']
-env.key_filename = '~/.ssh/id_rsa'
 
 
 def do_pack():
@@ -26,7 +25,14 @@ def do_pack():
 
 
 def do_deploy(archive_path):
-    """Deploys static releases to servers"""
+    """Distributes an archive to a web server.
+
+    Args:
+        archive_path (str): The path of the archive to distribute.
+    Returns:
+        If the file doesn't exist at archive_path or an error occurs - False.
+        Otherwise - True.
+    """
     if not os.path.exists(archive_path):
         return False
 
@@ -38,7 +44,7 @@ def do_deploy(archive_path):
         return False
 
     # remove previous archive file
-    if run(f"rm -rf /data/web_static/releases/web_static_*").failed:
+    if run(f"rm -rf /data/web_static/releases/{tar_file}*").failed:
         return False
 
     # Create directory for extraction
@@ -46,7 +52,7 @@ def do_deploy(archive_path):
         return False
 
     # Extract the archive
-    if run(f"tar -xzvf /tmp/{tar_file} -C "
+    if run(f"tar -xzf /tmp/{tar_file} -C "
            f"/data/web_static/releases/{archive_filename}/").failed:
         return False
 
@@ -63,11 +69,14 @@ def do_deploy(archive_path):
     if run(f"rm -rf /data/web_static/releases/"
            f"{archive_filename}/web_static").failed:
         return False
+    
+    # remove the symbolic link
+    if run("rm -rf /data/web_static/current").failed:
+        return False
 
     # Update symbolic link
-    if run(f"ln -sf /data/web_static/releases/"
+    if run(f"ln -s /data/web_static/releases/"
            f"{archive_filename} /data/web_static/current").failed:
         return False
 
-    print("New version deployed!")
     return True
