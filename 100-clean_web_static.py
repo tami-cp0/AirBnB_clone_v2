@@ -19,25 +19,10 @@ def do_clean(number=0):
     Returns:
         None
     """
-    files = sorted(os.listdir("versions"))
-    file_list = list()
+    if int(number) < 1:
+        number = 1
 
-    for file in files:
-        num_with_extension = file.split("_")[-1]
-        file_number = num_with_extension.split(".")[0]
-        if file_number not in file_list:
-            file_list.append(file_number)
-
-    for file_number in file_list:
-        if number in ["0", "1"]:
-            start_index = 1
-        else:
-            start_index = int(number)
-
-    for i in range(start_index, len(file_list)):
-        local_file_path = f'versions/web_static_{file_list[i]}.tgz'
-        local(f"rm {local_file_path}")
-
-        remote_file_path = \
-            f'/data/web_static/releases/web_static_{file_list[i]}'
-        run(f"rm -rf {remote_file_path}")
+    local(f"ls -1 versions/ | tail -n +{int(number) + 1} "
+          "| xargs -I % rm versions/%")
+    run(f"ls -1 web_static_* &> /dev/null | tail -n +{int(number) + 1} "
+        "| xargs -I % rm -rf /data/web_static/releases/%")
