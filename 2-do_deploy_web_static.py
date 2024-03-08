@@ -3,15 +3,13 @@
 This file contains a script that distribute an archive to my web servers
 using the function do_deploy
 """
-
-
 import os
 from fabric.api import *
 from datetime import datetime
 
 
 env.user = 'ubuntu'
-env.hosts = ['34.204.95.239', '54.234.17.205']
+env.hosts = ['54.157.167.117', '54.160.75.58']
 
 
 def do_pack():
