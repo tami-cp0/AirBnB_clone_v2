@@ -1,82 +1,67 @@
 #!/usr/bin/python3
-#  Fabric script that distributes an archive to your web servers
+"""
+This file contains a script that distribute an archive to my web servers
+using the function do_deploy
+"""
+
+
+import os
 from fabric.api import *
 from datetime import datetime
-import os
 
 
 env.user = 'ubuntu'
-env.hosts = ['54.157.167.117', '54.160.75.58']
+env.hosts = ['34.204.95.239', '54.234.17.205']
 
 
 def do_pack():
-    """Create a tar gzipped archive of the directory web_static."""
-    now = datetime.utcnow()
-    timestamp = now.strftime("%Y%m%d%H%M%S")
-    archive_name = f"web_static_{timestamp}.tgz"
-    archive_path = f"versions/{archive_name}"
+    """This function generates a .tgz archive"""
+    local('mkdir -p versions')
 
-    if not os.path.exists("versions"):
-        if local("mkdir versions").failed:
-            return None
+    # generate the .tgz archive
+    time = datetime.now().strftime('%Y%m%d%H%M%S')
+    archive_path = 'versions/web_static_{}.tgz'.format(time)
+    result = local('tar -czvf {} web_static'.format(archive_path))
 
-    if local(f"tar -cvzf {archive_path} web_static").succeeded:
+    # if successful return the archive path
+    if result.succeeded:
         return archive_path
     else:
         return None
 
 
 def do_deploy(archive_path):
-    """Distributes an archive to a web server.
-
-    Args:
-        archive_path (str): The path of the archive to distribute.
-    Returns:
-        If the file doesn't exist at archive_path or an error occurs - False.
-        Otherwise - True.
-    """
+    """Distributes an archive to the web servers"""
     if not os.path.exists(archive_path):
         return False
 
-    filename = os.path.basename(archive_path)
-    # without extension
-    raw_name = filename.split(".")[0]
+    print("Deploying new version")
 
-    # Upload the archive to the remote server
-    if put(archive_path, f"/tmp/").failed:
+    # extract the filename without extension
+    filename = archive_path.split("/")[-1]
+    name = filename[: -4]
+
+    # define the release directory using the extracted name
+    release_dir = "/data/web_static/releases/{}".format(name)
+
+    # upload and uncompress the archive to a folder
+    put(archive_path, "/tmp/")
+    run("mkdir -p {}".format(release_dir))
+    r = run("tar -xzf /tmp/{} -C {}".format(filename, release_dir))
+
+    if r.failed:
         return False
 
-    # Create directory for extraction
-    if run(f"mkdir -p /data/web_static/releases/{raw_name}").failed:
-        return False
+    # copy files into the right directory
+    run("cp -r {}/web_static/* {}".format(release_dir, release_dir))
+    run("rm -rf /tmp/{} {}/web_static".format(filename, release_dir))
 
-    # Extract the archive
-    if run(f"tar -xzf /tmp/{filename} -C "
-           f"/data/web_static/releases/{raw_name}/").failed:
-        return False
+    # delete symbolic link from web server
+    run("rm -rf /data/web_static/current")
 
-    # Remove the temporary archive file
-    if run(f"rm -rf /tmp/{filename}").failed:
-        return False
+    # create a symlink to new version of code
+    run("ln -s {} /data/web_static/current".format(release_dir))
 
-    # Move files to the appropriate location
-    if run(f"mv /data/web_static/releases/{raw_name}/web_s"
-           f"tatic/* /data/web_static/releases/{raw_name}/").failed:
-        return False
+    print("New version deployed")
 
-    # Remove the now empty web_static directory
-    if run(f"rm -rf /data/web_static/releases/"
-           f"{filename}/web_static").failed:
-        return False
-
-    # remove the symbolic link
-    if run("rm -rf /data/web_static/current").failed:
-        return False
-
-    # Update symbolic link
-    if run(f"ln -s /data/web_static/releases/"
-           f"{raw_name} /data/web_static/current").failed:
-        return False
-
-    print("New version deployed!")
     return True
