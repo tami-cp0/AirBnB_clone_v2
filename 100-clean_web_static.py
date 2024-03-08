@@ -24,16 +24,21 @@ def do_clean(number=0):
     # store remote files
     # number_remote_files = run('ls -1 /data/web_static/releases/ |'
     #                           ' grep "web_static_*" | wc -l')
-
-    if int(number) < 1:
+    number = int(number)
+    if number < 1:
         number = 1
 
-    if len(local_files) > int(number):
+    if len(local_files) > number:
         local(f"ls -t versions/ | grep 'web_static_*' |"
-              f" tail -n +{int(number) + 1} "
+              f" tail -n +{number + 1} "
               "| xargs -I % rm versions/%")
 
+    # run(f"ls -t /data/web_static/releases/ | grep 'web_static_*' |"
+    #     f"tail -n +{int(number) + 1} |"
+    #     "xargs -I % rm -rf /data/web_static/releases/%")
 
-    run(f"ls -t /data/web_static/releases/ | grep 'web_static_*' |"
-        f"tail -n +{int(number) + 1} |"
-        "xargs -I % rm -rf /data/web_static/releases/%")
+    # Delete unnecessary archives on the servers releases folder
+    cmd_list = 'ls -t /data/web_static/releases'
+    cmd_tail_h = 'tail -n +{} |'.format(number + 1)
+    cmd_tail_b = 'xargs -I {{}} rm -rf /data/web_static/releases/{{}}'
+    run(f"{cmd_list} | {cmd_tail_h} {cmd_tail_b}")
