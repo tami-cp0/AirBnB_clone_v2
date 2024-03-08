@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Fabric script (based on the file 2-do_deploy_web_static.py) that creates and distributes an archive to your web servers
+Fabric script that creates and distributes an archive to your web servers
 """
 from fabric.api import env, run, put, local
 from datetime import datetime
@@ -9,6 +9,14 @@ import os
 env.user = "ubuntu"
 env.hosts = ['54.157.167.117', '54.160.75.58']
 env.key_filename = '~/.ssh/id_rsa'
+
+
+def deploy():
+    """Create and distribute an archive to a web server."""
+    file = do_pack()
+    if file is None:
+        return False
+    return do_deploy(file)
 
 
 def do_pack():
@@ -29,60 +37,56 @@ def do_pack():
 
 
 def do_deploy(archive_path):
-    """Deploys static releases to servers"""
+    """Distributes an archive to a web server.
+
+    Args:
+        archive_path (str): The path of the archive to distribute.
+    Returns:
+        If the file doesn't exist at archive_path or an error occurs - False.
+        Otherwise - True.
+    """
     if not os.path.exists(archive_path):
         return False
-    remote_hostnames = ['492915-web-01', '492915-web-02']
 
-    if os.getenv('HOSTNAME') in remote_hostnames:
-        try:
-            archive_filename = os.path.basename(archive_path).split(".")[0]
-            tar_file = os.path.basename(archive_path)
-            # remove file
-            local(f"rm -rf /data/web_static/releases/web_static_*")
-            # Create directory for extraction
-            local(f"mkdir -p /data/web_static/releases/{archive_filename}/")
-            # Extract the archive
-            local(f"tar -xzvf {archive_path} -C "
-                f"/data/web_static/releases/{archive_filename}/")
-            # Remove the temporary archive file
-            local(f"rm {archive_path}")
-            # Move files to the appropriate location
-            local(f"mv /data/web_static/releases/{archive_filename}"
-                f"/web_static/* /data/web_static/releases/{archive_filename}/")
-            # Remove the now empty web_static directory
-            local(f"rm -rf /data/web_static/releases/{archive_filename}/web_static")
-            # Update symbolic link
-            local(f"ln -sf /data/web_static/releases/"
-                f"{archive_filename} /data/web_static/current")
-            print("New version deployed!")
-            return True
-        except Exception as e:
-            return False
-    else:
-        try:
-            archive_filename = os.path.basename(archive_path).split(".")[0]
-            tar_file = os.path.basename(archive_path)
-            # Upload the archive to the remote server
-            put(archive_path, f"/tmp/{tar_file}")
-            # remove file
-            run(f"rm -rf /data/web_static/releases/web_static_*")
-            # Create directory for extraction
-            run(f"mkdir -p /data/web_static/releases/{archive_filename}")
-            # Extract the archive
-            run(f"tar -xzvf /tmp/{tar_file} -C "
-                f"/data/web_static/releases/{archive_filename}/")
-            # Remove the temporary archive file
-            run(f"rm /tmp/{tar_file}")
-            # Move files to the appropriate location
-            run(f"mv /data/web_static/releases/{archive_filename}"
-                f"/web_static/* /data/web_static/releases/{archive_filename}/")
-            # Remove the now empty web_static directory
-            run(f"rm -rf /data/web_static/releases/{archive_filename}/web_static")
-            # Update symbolic link
-            run(f"ln -sf /data/web_static/releases/"
-                f"{archive_filename} /data/web_static/current")
-            print("New version deployed!")
-            return True
-        except Exception as e:
-            return False
+    filename = os.path.basename(archive_path)
+    # without extension
+    raw_name = filename.split(".")[0]
+
+    # Upload the archive to the remote server
+    if put(archive_path, f"/tmp/").failed:
+        return False
+
+    # Create directory for extraction
+    if run(f"mkdir -p /data/web_static/releases/{raw_name}").failed:
+        return False
+
+    # Extract the archive
+    if run(f"tar -xzf /tmp/{filename} -C "
+           f"/data/web_static/releases/{raw_name}/").failed:
+        return False
+
+    # Remove the temporary archive file
+    if run(f"rm -rf /tmp/{filename}").failed:
+        return False
+
+    # Move files to the appropriate location
+    if run(f"mv /data/web_static/releases/{raw_name}/web_s"
+           f"tatic/* /data/web_static/releases/{raw_name}/").failed:
+        return False
+
+    # Remove the now empty web_static directory
+    if run(f"rm -rf /data/web_static/releases/"
+           f"{filename}/web_static").failed:
+        return False
+
+    # remove the symbolic link
+    if run("rm -rf /data/web_static/current").failed:
+        return False
+
+    # Update symbolic link
+    if run(f"ln -s /data/web_static/releases/"
+           f"{raw_name} /data/web_static/current").failed:
+        return False
+
+    print("New version deployed!")
+    return True
