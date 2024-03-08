@@ -9,6 +9,16 @@ env.hosts = ['54.157.167.117', '54.160.75.58']
 
 
 def do_clean(number=0):
+    """
+    Deletes out-of-date archives from the versions folder.
+
+    Args:
+        number (int, optional): The number of recent archives to keep.
+            Defaults to 0, which removes all but the most recent.
+
+    Returns:
+        None
+    """
     files = sorted(os.listdir("versions"))
     file_list = list()
 
