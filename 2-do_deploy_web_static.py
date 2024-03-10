@@ -14,6 +14,7 @@ env.hosts = [
 # set the username
 env.user = "ubuntu"
 
+
 def do_pack():
     """This method will pack the web_static dir into a tar.gz
     for deployinment to remote servers.
