@@ -8,8 +8,8 @@ from datetime import datetime
 
 # set the server hosts for web-01 and web-02
 env.hosts = [
-    "52.87.254.150",
-    "52.86.39.247",
+    "100.26.157.241",
+    "52.3.250.135",
 ]
 # set the username
 env.user = "ubuntu"
