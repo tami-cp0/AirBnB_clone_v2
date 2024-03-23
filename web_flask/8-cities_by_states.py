@@ -7,6 +7,7 @@ from models.state import State
 
 app = Flask(__name__)
 
+
 @app.route('/cities_by_states', strict_slashes=False)
 def cities_by_states():
     """
@@ -23,7 +24,8 @@ def teardown(exception):
     Closes current database session
     """
     storage.close()
-    
+
+
 if __name__ == '__main__':
     # Run the Flask application with custom host and port
     app.run(host='0.0.0.0', port=5000)
