@@ -11,23 +11,24 @@ from sqlalchemy.orm import relationship
 class State(BaseModel, Base):
     """ State class """
     __tablename__ = 'states'
-    cities = relationship(
-        "City", backref="state",
-        cascade="all, delete, delete-orphan"
-    )
 
     name = Column(
         String(128),
         nullable=False
     )
 
-    @property
-    def cities(self):
-        """
-        returns the list of City instances with state_id
-        equals to the current State.id
-        """
-        if os.getenv('HBNB_TYPE_STORAGE') == 'fs':
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        cities = relationship(
+            "City", backref="state",
+            cascade="all, delete, delete-orphan"
+        )
+    else:
+        @property
+        def cities(self):
+            """
+            returns the list of City instances with state_id
+            equals to the current State.id
+            """
             # Retrievs city instances
             instances = models.storage.all(City)
             city_list = []
