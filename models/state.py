@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """ State Module for HBNB project """
 import models
+import os
 from models.base_model import BaseModel, Base
 from models.city import City
 from sqlalchemy import Column, String
@@ -26,11 +27,12 @@ class State(BaseModel, Base):
         returns the list of City instances with state_id
         equals to the current State.id
         """
-        # Retrievs city instances
-        instances = models.storage.all(City)
-        city_list = []
+        if os.getenv('HBNB_TYPE_STORAGE') == 'fs':
+            # Retrievs city instances
+            instances = models.storage.all(City)
+            city_list = []
 
-        for city in instances:
-            if getattr(city, 'state_id', None) == self.id:
-                city_list.append(city)
-        return city_list
+            for city in instances.values():
+                if getattr(city, 'state_id', None) == self.id:
+                    city_list.append(city)
+            return city_list
