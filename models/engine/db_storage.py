@@ -17,6 +17,7 @@ from models.user import User
 
 
 class DBStorage:
+    """Database storage handler."""
     __engine = None
     __session = None
 
@@ -54,20 +55,25 @@ class DBStorage:
         return table_dict
 
     def new(self, obj):
+        """Add a new object to the database session."""
         self.__session.add(obj)
 
     def save(self):
+        """Commit changes to the database session."""
         self.__session.commit()
 
     def delete(self, obj=None):
+        """Delete specified object from the database session."""
         if obj is not None:
             self.__session.delete(obj)
 
     def reload(self):
+        """Reload the database session."""
         Base.metadata.create_all(self.__engine)
         self.__session = scoped_session(
             sessionmaker(bind=self.__engine, expire_on_commit=False)
         )
 
     def close(self):
+        """Close the database session."""
         self.__session.remove()
