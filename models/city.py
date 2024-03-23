@@ -8,7 +8,8 @@ from sqlalchemy.orm import relationship
 class City(BaseModel, Base):
     """ The city class, contains state ID and name """
     __tablename__ = 'cities'
-    places = relationship('Place', backref='cities', cascade='all, delete, delete-orphan')
+    places = relationship('Place', backref='cities',
+                          cascade='all, delete, delete-orphan')
 
     name = Column(
         String(128),

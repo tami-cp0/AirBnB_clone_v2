@@ -13,5 +13,3 @@ class Amenity(BaseModel, Base):
         String(12),
         nullable=False
     )
-    
-    

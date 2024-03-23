@@ -13,10 +13,11 @@ from models.amenity import Amenity
 place_amenity = Table(
     'place_amenity', Base.metadata,
     Column('place_id', String(60), ForeignKey('places.id'),
-       nullable=False, primary_key=True),
+           nullable=False, primary_key=True),
     Column('amenity_id', String(60), ForeignKey('amenities.id'),
-       nullable=False, primary_key=True)
+           nullable=False, primary_key=True)
 )
+
 
 class Place(BaseModel, Base):
     """ A place to stay """
@@ -68,9 +69,8 @@ class Place(BaseModel, Base):
         reviews = relationship(
             'Review', backref='place', cascade='all, delete, delete-orphan'
         )
-        amenities = relationship(
-            'Amenity', secondary=place_amenity, backref='places', viewonly=False
-        )
+        amenities = relationship('Amenity', secondary=place_amenity,
+                                 backref='places', viewonly=False)
     else:
         @property
         def reviews(self):
@@ -86,7 +86,7 @@ class Place(BaseModel, Base):
                 if getattr(review, 'place_id', None) == self.id:
                     review_list.append(review)
             return review_list
-        
+
         @property
         def amenities(self):
             """
@@ -105,7 +105,8 @@ class Place(BaseModel, Base):
         @amenities.setter
         def amenities(self, obj):
             """
-            Setter that adds an Amenity.id to the amenity_ids list if obj is an Amenity instance.
+            Setter that adds an Amenity.id to the amenity_ids
+            list if obj is an Amenity instance.
             """
             if isinstance(obj, Amenity) and obj.id not in self.amenity_ids:
                 self.amenity_ids.append(obj.id)
