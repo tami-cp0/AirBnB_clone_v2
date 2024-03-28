@@ -142,6 +142,7 @@ Usage: <class_name>.update(<_id>, <dictionary>)
 <br>
 
 ### Additions
+
 - Added a Database Storage using mysql and sqlalchemy.
 - Set up both the test and dev mysql server
-- integrated flask with jinja2 engine into the program for a more dynamic webpage
+- integrated flask with jinja2 engine into the program for a more dynamic webpage.
